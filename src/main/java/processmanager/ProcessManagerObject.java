@@ -6,40 +6,47 @@ import java.util.Queue;
 import main.java.JavaProcess;
 
 public class ProcessManagerObject {
-	
-	private  JavaProcess javaProcess;
-	private  JavaProcessThread processThread;
-	private  Queue<String> processQueue = new LinkedList<String>();
-	
-	public ProcessManagerObject(JavaProcess process){
-		this.javaProcess=process;
-		//this.processThread=jpThread;		
+
+	private JavaProcess javaProcess;
+	private JavaProcessThread processThread;
+	private Queue<String> processQueue = new LinkedList<String>();
+
+	public ProcessManagerObject(JavaProcess process) {
+		this.javaProcess = process;
+		// this.processThread=jpThread;
 	}
-	
-	public void startThread(){
-		
-		processThread = new JavaProcessThread(javaProcess.getPID(), processQueue);
+
+	public void startThread() {
+
+		processThread = new JavaProcessThread(javaProcess.getPID(),
+				processQueue, javaProcess);
 		processThread.start();
 	}
-	
-	public boolean threadRunning(){
-		
-		
-		
+
+	public boolean threadRunning() {
+
 		return processThread.isAlive();
-		
 	}
-	
-	public void threadStop(){	
-		
+
+	public void threadStop() {
+
 		processQueue.add("stop");
 	}
-	
-	public  String getPID(){
+
+	public String getPID() {
 		return javaProcess.getPID();
 	}
-	
-	public  String getName(){
+
+	public String getName() {
 		return javaProcess.getName();
+	}
+	
+	public JavaProcess getProcess(){
+		return javaProcess;
+	}
+	public void clearObject(){
+		javaProcess=null;
+		processThread=null;
+		processQueue = null;
 	}
 }

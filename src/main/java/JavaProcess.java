@@ -2,7 +2,7 @@ package main.java;
 
 public class JavaProcess {
 
-	private String name, pid, lThreads = "", pThreads = "", dThreads = "", tSThreads = "", currentCPU = "", currentMem = "", heapUsage = "",
+	private String name, pid, lThreads = "updating", pThreads = "updating", dThreads = "updating", tSThreads = "updating", currentCPU = "updating", currentMem = "updating", heapUsage = "updating",
 			peakCPU = "0", peakMemUse = "0";
 
 	public JavaProcess(String name, String pid) {
@@ -16,6 +16,10 @@ public class JavaProcess {
 
 	public String getPID() {
 		return pid;
+	}
+	
+	public void updateName(String name){
+		this.name=name;
 	}
 
 	public void setLiveThreads(String lThreads) {

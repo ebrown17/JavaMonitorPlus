@@ -15,6 +15,7 @@ import javax.management.remote.JMXServiceURL;
 
 import main.java.JavaProcess;
 
+
 import sun.tools.jconsole.LocalVirtualMachine;
 
 import com.sun.tools.attach.AgentInitializationException;
@@ -34,8 +35,16 @@ public class JavaProcessThread extends Thread {
 	private ThreadMXBean remoteThreading;
 	private MemoryMXBean memoryBean;
 	private static DecimalFormat df = new DecimalFormat("##.##");
+	private JavaProcess javaProcess;
+	private VirtualMachine vm;
+	private String connectorAddress = null;
+	private String agent;
+	private JMXConnector connector;
+	private MBeanServerConnection remote;
+	private LocalVirtualMachine lvm;
 
-	public JavaProcessThread(String pid, Queue<String> processQueue) {
+	public JavaProcessThread(String pid, Queue<String> processQueue, JavaProcess javaProcess) {
+		this.javaProcess = javaProcess;
 		this.pid = pid;
 		this.processQueue = processQueue;
 	}
@@ -44,15 +53,9 @@ public class JavaProcessThread extends Thread {
 
 		System.out.println("Java Processing Thread started for " + pid);
 
-		LocalVirtualMachine lvm = LocalVirtualMachine.getLocalVirtualMachine(Integer.parseInt(pid));
-
-		VirtualMachine vm;
-		String connectorAddress = null;
-		String agent;
-		JMXConnector connector;
-		MBeanServerConnection remote;
-
-		// if process closes while connected, skip it before trying to
+		lvm = LocalVirtualMachine.getLocalVirtualMachine(Integer.parseInt(pid));
+		
+		// if process closes while trying to connect, skip it before trying to
 		// assign values
 		try{
 			vm = VirtualMachine.attach(pid);
@@ -65,24 +68,52 @@ public class JavaProcessThread extends Thread {
 			remoteThreading = ManagementFactory.newPlatformMXBeanProxy(remote,ManagementFactory.THREAD_MXBEAN_NAME,ThreadMXBean.class);
 
 			memoryBean = ManagementFactory.newPlatformMXBeanProxy(remote,ManagementFactory.MEMORY_MXBEAN_NAME,MemoryMXBean.class);
+			
+			names = lvm.displayName().split("\\.");
+			name = names[names.length - 1].toString();
+			
+			javaProcess.updateName(name);
+			maxHeap = memoryBean.getHeapMemoryUsage().getMax();
 
 		} catch (AttachNotSupportedException e){
-
+			try {
+				connector.close();
+			} catch (IOException e1) {
+				/*// TODO Auto-generated catch block
+				e1.printStackTrace();*/
+			}
+			running = false;
 			e.printStackTrace();
 		} catch (IOException e){
-
+			try {
+				connector.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				//e1.printStackTrace();
+			}
+			running = false;
 			e.printStackTrace();
 		} catch (AgentLoadException e){
-
+			try {
+				connector.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				//e1.printStackTrace();
+			}
+			running = false;
 			e.printStackTrace();
 		} catch (AgentInitializationException e){
-
+			try {
+				connector.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				//e1.printStackTrace();
+			}
+			running = false;
 			e.printStackTrace();
 		}
 
-		names = lvm.displayName().split("\\.");
-		name = names[names.length - 1].toString();
-		maxHeap = memoryBean.getHeapMemoryUsage().getMax();
+		
 
 		while (running){
 
@@ -99,14 +130,28 @@ public class JavaProcessThread extends Thread {
 				heapUsed = memoryBean.getHeapMemoryUsage().getUsed();
 				percentMem = ((double) heapUsed / (double) maxHeap) * 100;
 
-				System.out.print(name + " ");
-				System.out.print(String.valueOf(remoteThreading.getThreadCount()) + " ");
-				System.out.print(String.valueOf(remoteThreading.getPeakThreadCount()) + " ");
-				System.out.print(String.valueOf(remoteThreading.getDaemonThreadCount()) + " ");
-				System.out.print(String.valueOf(remoteThreading.getTotalStartedThreadCount()) + " ");
-				System.out.print(String.valueOf(df.format(percentMem)) + " \n");
+				//System.out.print(name + ", ");
+				javaProcess.setLiveThreads(String.valueOf(remoteThreading.getThreadCount()));
+				javaProcess.setPeakThreads(String.valueOf(remoteThreading.getPeakThreadCount()));
+				javaProcess.setDaemonThreads(String.valueOf(remoteThreading.getDaemonThreadCount()));
+				javaProcess.setStartedThreads(String.valueOf(remoteThreading.getTotalStartedThreadCount()));
+				javaProcess.setHeapUsed(String.valueOf(df.format(percentMem)));
+				
+				
+				
+				/*System.out.print(String.valueOf(remoteThreading.getThreadCount()) + ", ");
+				System.out.print(String.valueOf(remoteThreading.getPeakThreadCount()) + ", ");
+				System.out.print(String.valueOf(remoteThreading.getDaemonThreadCount()) + ", ");
+				System.out.print(String.valueOf(remoteThreading.getTotalStartedThreadCount()) + ", ");
+				System.out.print(String.valueOf(df.format(percentMem)) + " \n");*/
 
 			} catch (Exception e){
+				try {
+					connector.close();
+				} catch (IOException e1) {
+					/*// TODO Auto-generated catch block
+					e1.printStackTrace();*/
+				}
 				running = false;
 			}
 
@@ -120,7 +165,7 @@ public class JavaProcessThread extends Thread {
 
 		}
 
-		System.out.println(name + " thread stopped");
+		System.out.println(javaProcess.getName() + " thread stopped");
 
 	}
 
