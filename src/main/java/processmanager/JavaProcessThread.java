@@ -7,6 +7,7 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.ThreadMXBean;
 import java.text.DecimalFormat;
 import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
@@ -29,7 +30,7 @@ public class JavaProcessThread extends Thread {
 	private String[] names;
 	private long heapUsed, maxHeap;
 	private double percentMem;
-	private Queue<String> processQueue;
+	private BlockingQueue<String[]> processQueue;
 	private boolean running = true;
 	private String CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
 	private ThreadMXBean remoteThreading;
@@ -43,15 +44,15 @@ public class JavaProcessThread extends Thread {
 	private MBeanServerConnection remote;
 	private LocalVirtualMachine lvm;
 
-	public JavaProcessThread(String pid, Queue<String> processQueue, JavaProcess javaProcess) {
+	public JavaProcessThread(String pid, BlockingQueue<String[]> queue, JavaProcess javaProcess) {
 		this.javaProcess = javaProcess;
 		this.pid = pid;
-		this.processQueue = processQueue;
+		this.processQueue = queue;
 	}
 
 	public void run() {
 
-		System.out.println("Java Processing Thread started for " + pid);
+		System.out.println("Java Processing Thread started for " + pid + "\n");
 
 		lvm = LocalVirtualMachine.getLocalVirtualMachine(Integer.parseInt(pid));
 		
@@ -117,14 +118,14 @@ public class JavaProcessThread extends Thread {
 
 		while (running){
 
-			queueData = processQueue.poll();
+			/*queueData = processQueue.poll();
 
 			if (queueData != null){
 				if (queueData.equals("stop")){
 					running = false;
 					continue;
 				}
-			}
+			}*/
 
 			try{
 				heapUsed = memoryBean.getHeapMemoryUsage().getUsed();
@@ -138,7 +139,7 @@ public class JavaProcessThread extends Thread {
 				javaProcess.setHeapUsed(String.valueOf(df.format(percentMem)));
 				
 				
-				
+				processQueue.add(javaProcess.getProcessData());
 				/*System.out.print(String.valueOf(remoteThreading.getThreadCount()) + ", ");
 				System.out.print(String.valueOf(remoteThreading.getPeakThreadCount()) + ", ");
 				System.out.print(String.valueOf(remoteThreading.getDaemonThreadCount()) + ", ");
@@ -157,7 +158,7 @@ public class JavaProcessThread extends Thread {
 
 		
 			try{
-				Thread.sleep(2000);
+				Thread.sleep(3000);
 			} catch (InterruptedException e){
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -165,7 +166,7 @@ public class JavaProcessThread extends Thread {
 
 		}
 
-		System.out.println(javaProcess.getName() + " thread stopped");
+		System.out.println(javaProcess.getName() + " thread stopped \n");
 
 	}
 

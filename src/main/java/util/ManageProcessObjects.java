@@ -3,6 +3,7 @@ package main.java.util;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 import main.java.JavaProcess;
 import main.java.processmanager.ProcessManagerObject;
@@ -12,13 +13,13 @@ public class ManageProcessObjects {
 	private static ProcessManagerObject pMObject;
 	private static List<String> removeObjects = new ArrayList<String>();
 	
-	public static void startMonitorProcess(HashMap<String, JavaProcess> jpsMap, HashMap<String, ProcessManagerObject> processManagerObjects){
+	public static void startMonitorProcess(HashMap<String, JavaProcess> jpsMap, HashMap<String, ProcessManagerObject> processManagerObjects,BlockingQueue<String[]> queue){
 		
 		for (JavaProcess proc : jpsMap.values()){
 
 			if (!processManagerObjects.containsKey(proc.getPID())){
 				pMObject = new ProcessManagerObject(proc);
-				pMObject.startThread();
+				pMObject.startThread(queue);
 				processManagerObjects.put(proc.getPID(),pMObject);
 			}
 		}

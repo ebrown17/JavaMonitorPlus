@@ -2,6 +2,7 @@ package main.java.processmanager;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 
 import main.java.JavaProcess;
 
@@ -9,14 +10,14 @@ public class ProcessManagerObject {
 
 	private JavaProcess javaProcess;
 	private JavaProcessThread processThread;
-	private Queue<String> processQueue = new LinkedList<String>();
+	
 
 	public ProcessManagerObject(JavaProcess process) {
 		this.javaProcess = process;
 		// this.processThread=jpThread;
 	}
 
-	public void startThread() {
+	public void startThread(BlockingQueue<String[]> processQueue) {
 
 		processThread = new JavaProcessThread(javaProcess.getPID(),
 				processQueue, javaProcess);
@@ -30,7 +31,7 @@ public class ProcessManagerObject {
 
 	public void threadStop() {
 
-		processQueue.add("stop");
+		//processQueue.add("stop");
 	}
 
 	public String getPID() {
@@ -47,6 +48,6 @@ public class ProcessManagerObject {
 	public void clearObject(){
 		javaProcess=null;
 		processThread=null;
-		processQueue = null;
+		
 	}
 }
