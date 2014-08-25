@@ -19,9 +19,13 @@ public class ProcessManagerObject {
 
 	public void startThread(BlockingQueue<String[]> processQueue) {
 
-		processThread = new JavaProcessThread(javaProcess.getPID(),
-				processQueue, javaProcess);
-		processThread.start();
+		if(processThread==null){
+			processThread = new JavaProcessThread(javaProcess.getPID(),
+					processQueue, javaProcess);
+		}
+		if(!processThread.isAlive()){
+			processThread.start();
+		}
 	}
 
 	public boolean threadRunning() {

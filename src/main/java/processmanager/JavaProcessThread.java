@@ -1,12 +1,10 @@
 package main.java.processmanager;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.ThreadMXBean;
 import java.text.DecimalFormat;
-import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 
 import javax.management.MBeanServerConnection;
@@ -15,18 +13,15 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import main.java.JavaProcess;
+import main.java.commands.RunCommands;
 
 
 import sun.tools.jconsole.LocalVirtualMachine;
-
-import com.sun.tools.attach.AgentInitializationException;
-import com.sun.tools.attach.AgentLoadException;
-import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 
 public class JavaProcessThread extends Thread {
 
-	private String pid, queueData, name;
+	private String pid, name;
 	private String[] names;
 	private long heapUsed, maxHeap;
 	private double percentMem;
@@ -76,56 +71,15 @@ public class JavaProcessThread extends Thread {
 			javaProcess.updateName(name);
 			maxHeap = memoryBean.getHeapMemoryUsage().getMax();
 
-		} catch (AttachNotSupportedException e){
-			try {
-				connector.close();
-			} catch (IOException e1) {
-				/*// TODO Auto-generated catch block
-				e1.printStackTrace();*/
-			}
+		} catch (Exception e){
+			
 			running = false;
-			e.printStackTrace();
-		} catch (IOException e){
-			try {
-				connector.close();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				//e1.printStackTrace();
-			}
-			running = false;
-			e.printStackTrace();
-		} catch (AgentLoadException e){
-			try {
-				connector.close();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				//e1.printStackTrace();
-			}
-			running = false;
-			e.printStackTrace();
-		} catch (AgentInitializationException e){
-			try {
-				connector.close();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				//e1.printStackTrace();
-			}
-			running = false;
-			e.printStackTrace();
+			System.out.println("Process closed during inital connection: " + name + "\n");
 		}
 
 		
 
 		while (running){
-
-			/*queueData = processQueue.poll();
-
-			if (queueData != null){
-				if (queueData.equals("stop")){
-					running = false;
-					continue;
-				}
-			}*/
 
 			try{
 				heapUsed = memoryBean.getHeapMemoryUsage().getUsed();
@@ -147,12 +101,8 @@ public class JavaProcessThread extends Thread {
 				System.out.print(String.valueOf(df.format(percentMem)) + " \n");*/
 
 			} catch (Exception e){
-				try {
-					connector.close();
-				} catch (IOException e1) {
-					/*// TODO Auto-generated catch block
-					e1.printStackTrace();*/
-				}
+				
+				System.out.println("Process closed unexpectedly: " + name + "\n");
 				running = false;
 			}
 
@@ -165,7 +115,7 @@ public class JavaProcessThread extends Thread {
 			}
 
 		}
-
+		RunCommands.runRM();
 		System.out.println(javaProcess.getName() + " thread stopped \n");
 
 	}

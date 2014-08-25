@@ -10,10 +10,12 @@ public class Commands {
 	private List<String> free = new ArrayList<String>();
 	private List<String> top = new ArrayList<String>();
 	private List<String> jps = new ArrayList<String>();
+	private List<String> rm = new ArrayList<String>();
 	
 	private static ProcessBuilder pFree;
 	private static ProcessBuilder pTop;
 	private static ProcessBuilder pJps;
+	private static ProcessBuilder pRm;
 	
 	private Commands(){	
 		
@@ -34,6 +36,12 @@ public class Commands {
 		jps.add("jps -v");		
 		pJps = new ProcessBuilder(jps);
 		pJps.redirectErrorStream(true);
+		
+		rm.add("/bin/bash");
+		rm.add("-c");
+		rm.add("rm .attach_pid*");		
+		pRm = new ProcessBuilder(rm);
+		pRm.redirectErrorStream(true);
 	}
 	
 	public static Commands getInstance(){
@@ -50,6 +58,10 @@ public class Commands {
 	
 	public  ProcessBuilder getFree(){
 		return pFree;
+	}
+	
+	public  ProcessBuilder getRm(){
+		return pRm;
 	}
 
 }

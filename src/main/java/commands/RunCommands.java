@@ -63,6 +63,16 @@ public class RunCommands {
 		return jpsMap;
 	}
 	
+	public static void runRM(){
+		try{
+			process = command.getRm().start();
+		} catch (IOException e){
+			System.out.println("Error running rm command: " + e.getMessage());;
+		}
+		
+		
+	}
+	
 	
 
 }

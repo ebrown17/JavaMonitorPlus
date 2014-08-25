@@ -28,6 +28,8 @@ public class JavaProcessThreadManager extends Thread {
 			
 			ManageProcessObjects.removeClosedProcesses(jpsMap, processManagerObjects);
 			
+			
+			
 		/*	for(ProcessManagerObject process: processManagerObjects.values()){
 				
 				System.out.println(Arrays.toString(process.getProcess().getProcessData()));
